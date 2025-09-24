@@ -21,6 +21,7 @@ class InvoiceController extends Controller
         $perPage = (int) $request->query('per_page', 15);
         $paginatedData = $this->invoiceService->listInvoices($perPage);
 
+    
         return $this->successResponse(
             status: true,
             message: 'Invoices successfully fetched',
@@ -30,9 +31,11 @@ class InvoiceController extends Controller
     }
 
     public function store(StoreInvoiceRequest $request)
-    {
+    {   
+    
         try {
             $dto = CreateInvoiceDTO::fromArray($request->validated());
+
             $invoice = $this->invoiceService->createInvoice($dto);
 
             return $this->successResponse(
@@ -41,6 +44,7 @@ class InvoiceController extends Controller
                 data: new InvoiceResource($invoice),
                 statusCode: 201
             );
+
         } catch (\Exception $e) {
             Log::error(['error' => $e->getMessage(), 'message' => 'Invoice creation failed']);
             return $this->errorResponse(

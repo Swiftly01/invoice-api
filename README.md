@@ -28,7 +28,7 @@
  }
  ```
 - `GET /api/invoices/{id}` — fetch single invoice.
-- `PATCH /api/invoices/{id}` — update invoice.
+- `PUT /api/invoices/{id}` — update invoice.
 - `DELETE /api/invoices/{id}` — delete invoice.
 
 
