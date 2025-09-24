@@ -13,36 +13,18 @@ use Throwable;
 
 class InvoiceService
 {
-    public const CREATE_MAX_RETRIES = 5;
+
 
     public function __construct(protected InvoiceRepositoryInterface $invoiceRepositoryInterface) {}
 
     public function createInvoice(CreateInvoiceDTO $dto): Invoice
     {
-        $attempt = 0;
-        beginning:
-        $attempt++;
-
-        try {
-            return DB::transaction(function () use ($dto) {
-                return $this->invoiceRepositoryInterface->create([
-                    'invoice_number' => $this->generateInvoiceNumber(),
-                    ...$dto->toArray()
-                ]);
-            });
-        } catch (QueryException $ex) {
-            $sqlState = $ex->getCode();
-            // SQLSTATE 23000 is constraint violation (MySQL duplicate key)
-            if (($sqlState === '23000' || str_contains($ex->getMessage(), 'Duplicate')) 
-                && $attempt < self::CREATE_MAX_RETRIES) {
-            // small backoff to reduce collision
-                usleep(100 * 1000);
-                goto beginning;
-            }
-            throw $ex;
-        } catch (Throwable $t) {
-            throw $t;
-        }
+        return DB::transaction(function () use ($dto) {
+            return $this->invoiceRepositoryInterface->create([
+                'invoice_number' => $this->generateInvoiceNumber(),
+                ...$dto->toArray()
+            ]);
+        });
     }
 
     public function updateInvoice(int $id, UpdateInvoiceDTO $dto): ?Invoice
