@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTOs\CreateInvoiceDTO;
 use App\Interfaces\InvoiceRepositoryInterface;
 use App\Models\Invoice;
 use Illuminate\Database\QueryException;
@@ -26,7 +27,15 @@ class InvoiceService
      *
      * $data must include customer_name and amount, and optional due_date, customer_email, status.
      */
-    public function createInvoice(array $data): Invoice
+
+//     public function createInvoice(CreateInvoiceDTO $dto): Invoice
+// {
+//     return $this->repo->create([
+//         'invoice_number' => $this->generateInvoiceNumber(),
+//         ...$dto->toArray()
+//     ]);
+//}
+    public function createInvoice(CreateInvoiceDTO $dto): Invoice
     {
         $attempt = 0;
         beginning:
@@ -34,12 +43,15 @@ class InvoiceService
 
         // generate invoice number (customize as needed). Could be sequential or UUID.
         // If you need strictly incremental numbers, use DB sequence table with FOR UPDATE (more below).
-        $data['invoice_number'] = $this->generateInvoiceNumber();
+       // $data['invoice_number'] = $this->generateInvoiceNumber();
 
         // wrap in DB transaction for safety (atomic)
         try {
-            return DB::transaction(function () use ($data) {
-                return $this->invoiceRepositoryInterface->create($data);
+            return DB::transaction(function () use ($dto) {
+                return $this->invoiceRepositoryInterface->create([
+                    'invoice_number' => $this->generateInvoiceNumber(),
+                    ...$dto->toArray()
+                ]);
             });
         } catch (QueryException $ex) {
             // SQLSTATE 23000 is constraint violation (MySQL duplicate key)
