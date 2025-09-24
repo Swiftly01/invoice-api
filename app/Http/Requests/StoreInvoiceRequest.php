@@ -24,11 +24,11 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_name' => 'required|string|max:255',
-            'customer_email' => 'nullable|email|max:255',
-            'amount' => 'required|numeric|min:0.01',
-            'due_date' => 'nullable|date',
-            'status' => ['nullable',new Enum(InvoiceStatusEnum::class)],
+            'customer_name' => ['required', 'string', 'max:255'],
+            'customer_email' => ['nullable', 'email', 'max:255'],
+            'amount' => ['required', 'numeric', 'min:0.01'],
+            'due_date' => ['nullable', 'date'],
+            'status' => ['nullable', new Enum(InvoiceStatusEnum::class)],
         ];
     }
 }
