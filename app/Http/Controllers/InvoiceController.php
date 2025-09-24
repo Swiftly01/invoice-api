@@ -3,18 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\DTOs\CreateInvoiceDTO;
+use App\DTOs\UpdateInvoiceDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
+use App\Http\Requests\UpdateInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
-
-
     public function __construct(protected InvoiceService $invoiceService) {}
 
     public function index(Request $request)
@@ -25,10 +24,8 @@ class InvoiceController extends Controller
         return $this->successResponse(
             status: true,
             message: 'Invoices successfully fetched',
-            data: [
-                'data' => InvoiceResource::collection($paginatedData),
-            ],
-
+            data: InvoiceResource::collection($paginatedData),
+          
         );
     }
 
@@ -37,22 +34,19 @@ class InvoiceController extends Controller
         try {
             $dto = CreateInvoiceDTO::fromArray($request->validated());
             $invoice = $this->invoiceService->createInvoice($dto);
+
             return $this->successResponse(
                 status: true,
-                statusCode: Response::HTTP_CREATED,
-                message: 'Invoices successfully created',
-                data: [
-                    'data' => new InvoiceResource($invoice),
-                ],
-
+                message: 'Invoice successfully created',
+                data: new InvoiceResource($invoice),
+                statusCode: 201
             );
         } catch (\Exception $e) {
-            Log::error(['error' => $e->getMessage(), 'message' => 'Invoice creation message']);
+            Log::error(['error' => $e->getMessage(), 'message' => 'Invoice creation failed']);
             return $this->errorResponse(
                 status: false,
                 message: 'Invoice creation failed',
-                statusCode: 400,
-
+                statusCode: 400
             );
         }
     }
@@ -60,24 +54,56 @@ class InvoiceController extends Controller
     public function show(int $id)
     {
         $invoice = $this->invoiceService->getInvoice($id);
-
-        if (! $invoice) {
-        
+        if (!$invoice) {
             return $this->errorResponse(
                 status: false,
                 message: 'Invoice not found',
-                statusCode: 404,
-
+                statusCode: 404
             );
         }
 
-         return $this->successResponse(
+        return $this->successResponse(
             status: true,
             message: 'Invoice successfully fetched',
-            data: [
-                'data' => new InvoiceResource($invoice),
-            ],
+            data: new InvoiceResource($invoice)
+        );
+    }
 
+    public function update(UpdateInvoiceRequest $request, int $id)
+    {
+        $dto = UpdateInvoiceDTO::fromArray($request->validated());
+        $invoice = $this->invoiceService->updateInvoice($id, $dto);
+
+        if (!$invoice) {
+            return $this->errorResponse(
+                status: false,
+                message: 'Invoice not found',
+                statusCode: 404
+            );
+        }
+
+        return $this->successResponse(
+            status: true,
+            message: 'Invoice successfully updated',
+            data: new InvoiceResource($invoice)
+        );
+    }
+
+    public function destroy(int $id)
+    {
+        $deleted = $this->invoiceService->deleteInvoice($id);
+
+        if (!$deleted) {
+            return $this->errorResponse(
+                status: false,
+                message: 'Invoice not found',
+                statusCode: 404
+            );
+        }
+
+        return $this->successResponse(
+            status: true,
+            message: 'Invoice successfully deleted'
         );
     }
 }
