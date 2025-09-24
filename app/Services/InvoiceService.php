@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\DTOs\CreateInvoiceDTO;
+use App\DTOs\UpdateInvoiceDTO;
 use App\Interfaces\InvoiceRepositoryInterface;
 use App\Models\Invoice;
 use Illuminate\Database\QueryException;
@@ -12,22 +13,9 @@ use Throwable;
 
 class InvoiceService
 {
-    /**
-     * Create a new class instance.
-     */
-
-
-    // How many times to retry on duplicate-key errors
     public const CREATE_MAX_RETRIES = 5;
 
     public function __construct(protected InvoiceRepositoryInterface $invoiceRepositoryInterface) {}
-
-    /**
-     * Create an invoice with safe retry to avoid race condition on unique invoice_number.
-     *
-     * $data must include customer_name and amount, and optional due_date, customer_email, status.
-     */
-
 
     public function createInvoice(CreateInvoiceDTO $dto): Invoice
     {
@@ -35,11 +23,6 @@ class InvoiceService
         beginning:
         $attempt++;
 
-        // generate invoice number (customize as needed). Could be sequential or UUID.
-        // If you need strictly incremental numbers, use DB sequence table with FOR UPDATE (more below).
-       // $data['invoice_number'] = $this->generateInvoiceNumber();
-
-        // wrap in DB transaction for safety (atomic)
         try {
             return DB::transaction(function () use ($dto) {
                 return $this->invoiceRepositoryInterface->create([
@@ -48,25 +31,33 @@ class InvoiceService
                 ]);
             });
         } catch (QueryException $ex) {
-            // SQLSTATE 23000 is constraint violation (MySQL duplicate key)
             $sqlState = $ex->getCode();
-            if (($sqlState === '23000' || strpos($ex->getMessage(), 'Duplicate') !== false) && $attempt < self::CREATE_MAX_RETRIES) {
-                // small backoff to reduce collision
-                usleep(100 * 1000); // 100ms
+            // SQLSTATE 23000 is constraint violation (MySQL duplicate key)
+            if (($sqlState === '23000' || str_contains($ex->getMessage(), 'Duplicate')) 
+                && $attempt < self::CREATE_MAX_RETRIES) {
+            // small backoff to reduce collision
+                usleep(100 * 1000);
                 goto beginning;
             }
-
-            // rethrow if not handled
             throw $ex;
         } catch (Throwable $t) {
             throw $t;
         }
     }
 
-    protected function generateInvoiceNumber(): string
+    public function updateInvoice(int $id, UpdateInvoiceDTO $dto): ?Invoice
     {
-        // Example: INV-YYYYMMDD-<random 6>
-        return 'INV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+        $invoice = $this->invoiceRepositoryInterface->find($id);
+        if (!$invoice) {
+            return null;
+        }
+        $this->invoiceRepositoryInterface->update($id, $dto->toArray());
+        return $this->invoiceRepositoryInterface->find($id);
+    }
+
+    public function deleteInvoice(int $id): bool
+    {
+        return $this->invoiceRepositoryInterface->delete($id);
     }
 
     public function getInvoice(int $id): ?Invoice
@@ -77,5 +68,10 @@ class InvoiceService
     public function listInvoices(int $perPage = 15)
     {
         return $this->invoiceRepositoryInterface->paginate($perPage);
+    }
+
+    protected function generateInvoiceNumber(): string
+    {
+        return 'INV-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
     }
 }
