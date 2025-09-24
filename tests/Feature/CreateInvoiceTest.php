@@ -21,6 +21,8 @@ class CreateInvoiceTest extends TestCase
 
         $response = $this->postJson('/api/invoices', $payload);
 
+      //  $response->dump();
+
         $response->assertStatus(201)
                  ->assertJsonStructure([
                      'data' => [

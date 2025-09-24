@@ -1,6 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoiceController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\InvoiceController;
 
 Route::apiResource('invoices', InvoiceController::class);

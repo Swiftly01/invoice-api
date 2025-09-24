@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\DTOs\CreateInvoiceDTO;
 use App\DTOs\UpdateInvoiceDTO;
