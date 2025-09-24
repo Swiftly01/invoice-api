@@ -57,7 +57,7 @@ class InvoiceService
 
     public function deleteInvoice(int $id): bool
     {
-        return $this->invoiceRepositoryInterface->delete($id);
+        return $this->invoiceRepositoryInterface->destroy($id);
     }
 
     public function getInvoice(int $id): ?Invoice

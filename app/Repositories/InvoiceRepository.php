@@ -16,7 +16,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         //
     }
 
-      public function create(array $data): Invoice
+    public function create(array $data): Invoice
     {
         return Invoice::create($data);
     }
@@ -30,8 +30,19 @@ class InvoiceRepository implements InvoiceRepositoryInterface
     {
         return Invoice::where('invoice_number', $number)->first();
     }
+
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return Invoice::orderBy('created_at', 'desc')->paginate($perPage);
+    }
+
+    public function update(int $id, array $dto): bool
+    {
+        return Invoice::find($id)->update($dto);
+    }
+
+    public function destroy(int $id): bool
+    {
+        return Invoice::destroy($id);
     }
 }
