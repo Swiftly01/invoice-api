@@ -28,13 +28,7 @@ class InvoiceService
      * $data must include customer_name and amount, and optional due_date, customer_email, status.
      */
 
-//     public function createInvoice(CreateInvoiceDTO $dto): Invoice
-// {
-//     return $this->repo->create([
-//         'invoice_number' => $this->generateInvoiceNumber(),
-//         ...$dto->toArray()
-//     ]);
-//}
+
     public function createInvoice(CreateInvoiceDTO $dto): Invoice
     {
         $attempt = 0;

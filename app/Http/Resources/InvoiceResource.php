@@ -16,19 +16,11 @@ class InvoiceResource extends JsonResource
     // {
     //     return parent::toArray($request);
     // }
-    protected string $type;
-
-    public function __construct($resource, string $type)
-    {
-        parent::__construct($resource);
-        $this->type = $type;
-    }
 
     public function toArray($request): array
     {
         // JSON:API resource object
         return [
-            'type' => $this->type,
             'id' => (string) $this->id,
             'attributes' => [
                 'invoice_number' => $this->invoice_number,

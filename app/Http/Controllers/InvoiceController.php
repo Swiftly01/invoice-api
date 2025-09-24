@@ -1,66 +1,82 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Models\Invoice;
+use App\DTOs\CreateInvoiceDTO;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
-use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Resources\InvoiceResource;
+use App\Http\Resources\JsonApiResource;
+use App\Services\InvoiceService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+
+    public function __construct(protected InvoiceService $invoiceService) {}
+
+    public function index(Request $request)
     {
-        //
+        $perPage = (int) $request->query('per_page', 15);
+        $paginatedData = $this->invoiceService->listInvoices($perPage);
+
+        return $this->successResponse(
+            status: true,
+            message: 'Invoices successfully fetched',
+            data: [
+                'data' => InvoiceResource::collection($paginatedData),
+            ],
+
+        );
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreInvoiceRequest $request)
     {
-        //
+        try {
+            $dto = CreateInvoiceDTO::fromArray($request->validated());
+            $invoice = $this->invoiceService->createInvoice($dto);
+            return $this->successResponse(
+                status: true,
+                message: 'Invoices successfully created',
+                data: [
+                    'data' => new InvoiceResource($invoice),
+                ],
+
+            );
+        } catch (\Exception $e) {
+            Log::error(['error' => $e->getMessage(), 'message' => 'Invoice creation message']);
+            return $this->errorResponse(
+                status: false,
+                message: 'Invoice creation failed',
+                statusCode: 400,
+
+            );
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Invoice $invoice)
+    public function show(int $id)
     {
-        //
-    }
+        $invoice = $this->invoiceService->getInvoice($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Invoice $invoice)
-    {
-        //
-    }
+        if (! $invoice) {
+        
+            return $this->errorResponse(
+                status: false,
+                message: 'Invoice not found',
+                statusCode: 404,
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateInvoiceRequest $request, Invoice $invoice)
-    {
-        //
-    }
+            );
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Invoice $invoice)
-    {
-        //
+         return $this->successResponse(
+            status: true,
+            message: 'Invoice successfully fetched',
+            data: [
+                'data' => new InvoiceResource($invoice),
+            ],
+
+        );
     }
 }
