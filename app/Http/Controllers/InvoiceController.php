@@ -6,9 +6,9 @@ use App\DTOs\CreateInvoiceDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
-use App\Http\Resources\JsonApiResource;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
@@ -39,6 +39,7 @@ class InvoiceController extends Controller
             $invoice = $this->invoiceService->createInvoice($dto);
             return $this->successResponse(
                 status: true,
+                statusCode: Response::HTTP_CREATED,
                 message: 'Invoices successfully created',
                 data: [
                     'data' => new InvoiceResource($invoice),
