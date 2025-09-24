@@ -3,7 +3,7 @@
 namespace App\Interfaces;
 
 use App\Models\Invoice;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface InvoiceRepositoryInterface
 {
