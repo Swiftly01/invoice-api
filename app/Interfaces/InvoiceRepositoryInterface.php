@@ -2,7 +2,13 @@
 
 namespace App\Interfaces;
 
+use App\Models\Invoice;
+use Illuminate\Pagination\LengthAwarePaginator;
+
 interface InvoiceRepositoryInterface
 {
-    //
+    public function create(array $data): Invoice;
+    public function find(int $id): ?Invoice;
+    public function findByInvoiceNumber(string $number): ?Invoice;
+    public function paginate(int $perPage = 15): LengthAwarePaginator;
 }
