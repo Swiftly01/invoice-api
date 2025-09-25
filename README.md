@@ -14,6 +14,9 @@
 
 4. API base: `http://127.0.0.1:8000/api`
 
+## Documentation
+- `Postman collection` - https://documenter.getpostman.com/view/33328101/2sB3QCSDA2.
+
 ## Routes
 - `GET /api/invoices` — list invoices (paginated). Query param: `per_page`.
 - `POST /api/invoices` — create invoice.
